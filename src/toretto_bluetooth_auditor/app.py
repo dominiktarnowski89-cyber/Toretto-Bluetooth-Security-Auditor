@@ -334,6 +334,16 @@ class Window(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    from pathlib import Path
+    from PySide6.QtGui import QIcon
+
+    icon = (
+        Path(__file__).resolve().parents[2]
+        / "assets/icons/toretto-bluetooth-icon.png"
+    )
+    if icon.is_file():
+        app.setWindowIcon(QIcon(str(icon)))
+
     w = Window()
     w.show()
     return app.exec()
