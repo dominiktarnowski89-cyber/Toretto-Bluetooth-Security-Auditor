@@ -13,6 +13,17 @@ def save_json(report, path):
 def render_html(report):
     d = report.to_dict()
     rows = []
+    device_rows = []
+    for device in d.get("nearby_devices", []):
+        observations = "; ".join(device.get("decoded_observations", [])) or "Brak rozpoznanych danych producenta/usługi"
+        device_rows.append("<tr>" + "".join(
+            f"<td>{html.escape(str(value))}</td>" for value in (
+                device.get("category", ""), device.get("protocol", ""),
+                device.get("name", ""), device.get("address", ""),
+                device.get("rssi", ""), observations,
+                device.get("identification_confidence", "none"),
+            )
+        ) + "</tr>")
     for x in d["findings"]:
         rows.append(
             "<tr>"
@@ -25,9 +36,11 @@ def render_html(report):
     return (
         "<!doctype html><html lang='pl'><meta charset='utf-8'><title>TORETTO audit</title><h1>TORETTO Bluetooth Security Auditor</h1><p>Scenario: "
         + html.escape(str(d["scenario"]))
-        + "</p><table><tr><th>Status</th><th>Check</th><th>Evidence</th><th>Recommendation</th></tr>"
+        + "</p><h2>Wykryte urządzenia Bluetooth</h2><table><tr><th>Kategoria</th><th>Protokół</th><th>Nazwa</th><th>Adres</th><th>RSSI</th><th>Rozpoznane dane</th><th>Pewność identyfikacji</th></tr>"
+        + "".join(device_rows)
+        + "</table><h2>Obserwacje tozsamosci BLE</h2><p>Liczba obserwacji: " + str(len(d.get("identity_observations", []))) + ". Odciski danych nie sa kryptograficznym dowodem tozsamosci fizycznego urzadzenia.</p><h2>Ustalenia audytu</h2><table><tr><th>Status</th><th>Kontrola</th><th>Dowody</th><th>Zalecenie</th></tr>"
         + "".join(rows)
-        + "</table><p>NOT VERIFIED = insufficient evidence.</p></html>"
+        + "</table><p>NOT VERIFIED = niewystarczające dowody. Dane producenta i nazwy nie potwierdzają właściciela, modelu, podatności ani złośliwego działania.</p></html>"
     )
 
 

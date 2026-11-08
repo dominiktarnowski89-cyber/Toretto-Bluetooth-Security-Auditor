@@ -3,32 +3,56 @@ import shutil
 
 from .linux_bt import run
 
+_STATE_PATTERNS = (
+    re.compile(r"\bstate\s*:\s*(ON|OFF|BLE_ON|TURNING_ON|TURNING_OFF)\b", re.I),
+    re.compile(r"\bmState\s*=\s*(ON|OFF|BLE_ON|TURNING_ON|TURNING_OFF)\b", re.I),
+    re.compile(r"\bBluetooth is (ON|OFF)\b", re.I),
+)
+
+
+def parse_bluetooth_manager_state(dump):
+    """Extract an explicitly reported Bluetooth state; never infer one."""
+    for pattern in _STATE_PATTERNS:
+        match = pattern.search(dump or "")
+        if match:
+            return match.group(1).upper()
+    return "NOT EXPOSED"
+
 
 def adb_devices():
     if not shutil.which("adb"):
         return []
-    c, o, _ = run(["adb", "devices", "-l"])
+    code, output, _ = run(["adb", "devices", "-l"])
     rows = []
-    if c == 0:
-        for line in o.splitlines()[1:]:
-            p = line.split()
-            if len(p) >= 2 and p[1] in {"device", "unauthorized", "offline"}:
-                rows.append({"serial": p[0], "state": p[1], "details": " ".join(p[2:])})
+    if code == 0:
+        for line in output.splitlines()[1:]:
+            parts = line.split()
+            if len(parts) >= 2 and parts[1] in {"device", "unauthorized", "offline"}:
+                rows.append(
+                    {"serial": parts[0], "state": parts[1], "details": " ".join(parts[2:])}
+                )
     return rows
 
 
 def shell(serial, cmd):
-    c, o, e = run(["adb", "-s", serial, "shell", cmd], 12)
-    return o if c == 0 else "UNAVAILABLE: " + (e or o)
+    code, output, error = run(["adb", "-s", serial, "shell", cmd], 12)
+    if code == 0:
+        return output or "EMPTY RESPONSE"
+    reason = error or output or f"ADB exited with status {code}"
+    return f"UNAVAILABLE: {reason}"
 
 
 def inspect_android(serial):
-    known = {x["serial"]: x for x in adb_devices()}
+    known = {item["serial"]: item for item in adb_devices()}
     if serial not in known or known[serial]["state"] != "device":
-        return {"authorized": False, "state": known.get(serial, {}).get("state", "not found")}
+        return {
+            "authorized": False,
+            "state": known.get(serial, {}).get("state", "not found"),
+        }
+
     props = {
-        k: shell(serial, v)
-        for k, v in {
+        key: shell(serial, command)
+        for key, command in {
             "manufacturer": "getprop ro.product.manufacturer",
             "model": "getprop ro.product.model",
             "android_release": "getprop ro.build.version.release",
@@ -37,8 +61,11 @@ def inspect_android(serial):
         }.items()
     }
     dump = shell(serial, "dumpsys bluetooth_manager")
-    m = re.search(r"\\bstate:\\s*(ON|OFF|BLE_ON|TURNING_ON|TURNING_OFF)", dump, re.I)
-    props["bluetooth_manager_state"] = m.group(1).upper() if m else "NOT EXPOSED"
+    props["bluetooth_manager_state"] = (
+        parse_bluetooth_manager_state(dump)
+        if not dump.startswith("UNAVAILABLE:")
+        else "NOT VERIFIED: " + dump
+    )
     props["headphone_link_encryption"] = (
         "NOT VERIFIED: Android did not expose authoritative link encryption evidence"
     )

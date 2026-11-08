@@ -1,5 +1,7 @@
+import re
 import shutil
 import subprocess
+import time
 
 
 def run(args, timeout=8):
@@ -55,3 +57,58 @@ def rfkill_status():
                     )
                 )
     return rows
+
+
+def scan_classic(timeout=8.0):
+    """Run a BR/EDR inquiry and retain only devices seen during this scan."""
+    if not shutil.which("bluetoothctl"):
+        raise RuntimeError("bluetoothctl missing; Bluetooth Classic scan unavailable")
+
+    process = subprocess.Popen(
+        ["bluetoothctl"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    try:
+        assert process.stdin is not None
+        process.stdin.write("scan.transport bredr\nscan on\n")
+        process.stdin.flush()
+        time.sleep(max(1.0, float(timeout)))
+        process.stdin.write("scan off\nquit\n")
+        process.stdin.flush()
+        scan_output, _ = process.communicate(timeout=6)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        process.kill()
+        process.communicate()
+        raise RuntimeError(f"Bluetooth Classic scan failed: {error}") from error
+
+    # bluetoothctl may colorize NEW/CHG event labels. Strip ANSI escapes before parsing.
+    clean_output = re.sub(r"\x1b\[[0-9;]*m", "", scan_output)
+    discovered = set(
+        re.findall(r"\[(?:NEW|CHG)\]\s+Device\s+([0-9A-Fa-f:]{17})", clean_output)
+    )
+
+    devices = {}
+    for address in sorted(discovered):
+        info_code, info, _ = run(["bluetoothctl", "info", address], timeout=4)
+        class_match = re.search(r"^\s*Class:\s*(0x[0-9a-fA-F]+)", info, re.M)
+        if info_code or not class_match:
+            continue
+        name_match = re.search(r"^\s*(?:Name|Alias):\s*(.+)$", info, re.M)
+        name = name_match.group(1).strip() if name_match else ""
+        devices[address] = {
+            "protocol": "Bluetooth Classic",
+            "name": name or "Unknown Classic device",
+            "address": address,
+            "device_class": class_match.group(1),
+            "manufacturer_data": {},
+            "service_data": {},
+            "tx_power": None,
+            "rssi": None,
+            "service_uuids": [],
+            "manufacturer_ids": [],
+            "source": "BlueZ BR/EDR inquiry event + device Class property",
+        }
+    return list(devices.values())
