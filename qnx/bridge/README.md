@@ -37,3 +37,11 @@ ssh lenovo 'cd ~/projekty/toretto-bluetooth-security-auditor && .venv/bin/python
 The bridge compacts each real BLE observation into an individual NDJSON event and rate-limits serial writes. **Verified in the running QNX 8 x86-64 guest:** two live Lenovo scan windows produced 19 observations; QNX emitted 19 cumulative summaries, with 12 fingerprint groups, without reboot. SSH encrypts Lenovo→Netcup; the QEMU Unix socket is local to Netcup.
 
 **Limitations:** This is a tested prototype, not a production service. QEMU was launched with a bounded timeout; the test is no longer a continuously running monitor. The bridge retries socket connections and spools failed events, but does not yet automatically replay the spool. It lacks acknowledgement from QNX and therefore a successful socket write alone cannot guarantee guest processing. Guest per-group scan history is not bounded, and no GUI has been integrated. Serial chunking may become a bottleneck at high advertisement rates.
+
+## Supervised session runner and memory caps
+
+`qnx/bridge/run-live.sh` starts the QNX VM, waits for `TORETTO_STREAM_PID`, then starts the live Lenovo scanner and forwards it to the guest. It retries the SSH scanner pipeline after termination and shuts down QEMU on runner exit. The runner is not installed as a systemd service, and does not survive host reboot without external supervision.
+
+The native QNX analyzer now limits its number of fingerprint groups to 2048, scan-ID buckets per group to 64, and distinct addresses per group/window to 32. Counters remain cumulative; these caps may omit newer identities or scan windows after exhaustion, so this is a safety limit rather than a production retention policy.
+
+**Timed integration test:** the runner successfully launched QNX, forwarded live Lenovo scans, and the guest wrote 46 native analysis summaries. At timeout the bridge was interrupted while forwarding the seventh scan, so the complete seventh window is **not** confirmed. Guest output, not merely host socket writes, is the authoritative evidence. No guest acknowledgement protocol, durable spool replay, crash-safe exactly-once delivery, or persistent service installation is implemented yet.
