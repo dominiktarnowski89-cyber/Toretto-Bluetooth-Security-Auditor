@@ -9,5 +9,6 @@ mkdir -p "$OUT"
 for spec in "gcc_ntox86_64:x86_64" "gcc_ntoaarch64le:aarch64"; do
   target="${spec%%:*}"; arch="${spec#*:}"
   qcc -V"$target" -std=c++17 -Wall -Wextra -Werror "$HERE/main.cpp" -ljson -o "$OUT/toretto-qnx-$arch"
-  file "$OUT/toretto-qnx-$arch"
+  qcc -V"$target" -std=c++17 -Wall -Wextra -Werror "$HERE/live.cpp" -ljson -o "$OUT/toretto-qnx-live-$arch"
+  file "$OUT/toretto-qnx-$arch" "$OUT/toretto-qnx-live-$arch"
 done
