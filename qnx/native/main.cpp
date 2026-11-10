@@ -23,7 +23,7 @@ int main(int argc,char** argv) {
   if(json_decoder_push_object(d,nullptr,false)!=JSON_DECODER_OK){std::cerr<<"Invalid observation\n";json_decoder_destroy(d);return 2;}
   Observation o; o.fingerprint=str(d,"fingerprint");o.address=str(d,"address");o.observed_at=str(d,"observed_at");o.scan_id=number(d,"scan_id");
   if(!o.fingerprint.empty())observations.push_back(o);
-  json_decoder_pop(d);
+  if(json_decoder_pop(d)!=JSON_DECODER_OK){std::cerr<<"Cannot exit observation\n";json_decoder_destroy(d);return 2;}
  }
  json_decoder_destroy(d);
  std::map<std::string,std::vector<Observation>> groups;
@@ -37,7 +37,8 @@ int main(int argc,char** argv) {
   for(const auto&o:items){addresses.insert(o.address);byscan[o.scan_id].insert(o.address);}
   int handoffs=0,multi=0;std::string last;bool have=false;
   for(const auto&[scan,addrs]:byscan){if(addrs.size()>1){multi++;continue;}const auto& addr=*addrs.begin();if(have&&last!=addr)handoffs++;last=addr;have=true;}
-  if(!first)out<<",";first=false;
+  if(!first)out<<",";
+  first=false;
   out<<"{\"fingerprint\":\""<<escape(fp)<<"\",\"observations\":"<<items.size()<<",\"addresses\":[";
   bool af=true;for(const auto&a:addresses){if(!af)out<<",";af=false;out<<"\""<<escape(a)<<"\"";}
   out<<"],\"address_count\":"<<addresses.size()<<",\"handoffs\":"<<handoffs<<",\"multi_address_scan_windows\":"<<multi<<",\"alerts\":[";
