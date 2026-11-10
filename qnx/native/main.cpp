@@ -17,6 +17,7 @@ int main(int argc,char** argv) {
  std::string data((std::istreambuf_iterator<char>(in)),{}); if(data.size()>32*1024*1024){std::cerr<<"Input exceeds 32 MiB\n";return 2;}
  json_decoder_t* d=json_decoder_create();if(!d){return 2;}
  if(json_decoder_parse_json_str(d,data.c_str())!=JSON_DECODER_OK){std::cerr<<"Invalid JSON\n";json_decoder_destroy(d);return 2;}
+ if(json_decoder_push_object(d,nullptr,false)!=JSON_DECODER_OK){std::cerr<<"Missing root object\n";json_decoder_destroy(d);return 2;}
  if(json_decoder_push_array(d,"identity_observations",false)!=JSON_DECODER_OK){std::cerr<<"Missing identity_observations array\n";json_decoder_destroy(d);return 2;}
  int count=json_decoder_length(d);std::vector<Observation> observations;
  for(int i=0;i<count;i++) {
