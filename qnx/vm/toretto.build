@@ -1,0 +1,29 @@
+[image=0x1400000]
+[virtual=x86_64,bios +compress] boot = {
+    startup-x86 -v
+    PATH=/proc/boot
+    LD_LIBRARY_PATH=/proc/boot
+    procnto-smp-instr
+}
+[+script] startup-script = {
+    display_msg TORETTO QNX 8.0 booting
+    SYSNAME=nto
+    TERM=qansi
+    devc-ser8250 &
+    reopen /dev/ser1
+    display_msg TORETTO serial ready
+    [+session] ksh &
+}
+[type=link] /tmp=/dev/shmem
+[type=link] /bin/sh=/proc/boot/ksh
+libc.so
+libgcc_s.so.1
+/usr/lib/ldqnx-64.so.2=ldqnx-64.so.2
+libm.so
+libz.so
+libtracelog.so.1
+libjson.so.1
+libstdc++.so.6
+ksh
+[perms=0555] toretto-qnx-analyze=/home/dominik/projekty/qnx8-development/workspace/toretto-qnx/build/toretto-qnx-x86_64
+[perms=0444] sample.json=/home/dominik/projekty/qnx8-development/workspace/toretto-qnx/sample-schema-v2.json
