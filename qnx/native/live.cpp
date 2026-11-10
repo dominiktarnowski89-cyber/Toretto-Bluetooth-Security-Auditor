@@ -21,6 +21,8 @@ static int getint(json_decoder_t* d,const char* key) {
 int main(int argc,char** argv) {
     if(argc>2){std::cerr<<"Usage: toretto-qnx-live [max-groups]\\n";return 2;}
     unsigned max_groups=2048;
+    constexpr size_t max_scans_per_group=64;
+    constexpr size_t max_addresses_per_group=32;
     if(argc==2){try {max_groups=static_cast<unsigned>(std::stoul(argv[1]));}catch(...){return 2;}if(max_groups==0||max_groups>65536)return 2;}
     std::map<std::string,Group> groups;
     std::string line;
@@ -40,7 +42,13 @@ int main(int argc,char** argv) {
             if(!fp.empty()&&!addr.empty()) {
                 auto it=groups.find(fp);
                 if(it!=groups.end()||groups.size()<max_groups) {
-                    auto& g=groups[fp];g.addresses.insert(addr);g.scans[scan].insert(addr);++g.observations;++accepted;++total;
+                    auto& g=groups[fp];
+                    if(g.addresses.size()<max_addresses_per_group || g.addresses.count(addr))g.addresses.insert(addr);
+                    if(g.scans.size()<max_scans_per_group || g.scans.count(scan)) {
+                        auto& addresses=g.scans[scan];
+                        if(addresses.size()<max_addresses_per_group || addresses.count(addr))addresses.insert(addr);
+                    }
+                    ++g.observations;++accepted;++total;
                 }
             }
             json_decoder_pop(d);
