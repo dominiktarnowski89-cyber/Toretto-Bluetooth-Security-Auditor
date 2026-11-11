@@ -27,3 +27,13 @@ The analyzer is compiled for QNX 8 x86-64 and AArch64 using the QNX SDK, uses th
 ## Scope and limitations
 
 This is a read-only BLE observation and correlation prototype. The Linux scanner does not connect to nearby devices; the QNX VM does not own a physical Bluetooth adapter. It is not a packet sniffer, an intrusion proof system, or a production-grade continuous service. A successful host socket write is not an acknowledgement from QNX; spool replay, end-to-end delivery acknowledgement, GUI integration, and long-duration reliability remain unfinished. QNX per-group scan/address retention is bounded, but cumulative counters and the fixed fingerprint-group limit have trade-offs. For contest readiness, check the actual competition rules, accepted architectures, submission deadline, licensing and required video format separately; no compliance claim is made here.
+
+## One-command offline contest verification
+
+With an official, **locally licensed and prepared** QNX 8 image containing the native analyzer, and the matching official QEMU disk, run:
+
+```bash
+QNX_IMAGE=/absolute/path/ifs-serial-stream.bin QNX_DISK=/absolute/path/disk-qemu.vmdk bash qnx/contest/demo-run.sh
+```
+
+The script boots QNX, replays five synthetic BLE events, verifies the native guest log (five events, address sharing, repeated handoff) and shuts down QEMU. It does not need Lenovo, Netcup, or an Internet connection. This intentionally does **not** package or redistribute proprietary QNX binaries. The official-image customization still needs to be documented as a portable build recipe.
