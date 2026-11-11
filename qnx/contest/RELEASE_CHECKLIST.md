@@ -9,11 +9,12 @@
 - [x] Source repository has an MIT license
 - [x] Rebuilt latest native source with licensed QNX SDP 8 (x86-64 and ARM64), regenerated IFS and reran QNX demo: PASS (2026-11-11)
 - [x] Tested malformed JSON and 70 unique addresses / scan IDs in actual QNX guest: 71 accepted windows including empty event, 70 observations; no crash (2026-11-11)
-- [ ] Complete oversized-input test: 4 MiB serial test did not finish within test window (38/71 windows). Need transport-throughput-aware timeout and separate parser stress test; do not claim a parser vulnerability
+- [x] Hardened native line reader to cap buffered records at 4 MiB, discard oversized input until newline, and continue; QNX x86-64/ARM64 builds passed, rebuilt guest image passed 5-event demo on Netcup (2026-11-11)
+- [ ] Complete end-to-end oversized-input stress test with throughput-aware serial timeout; prior 4 MiB transfer did not finish within test window (38/71 windows), so no final PASS
 - [x] Isolated source/output build with existing licensed QNX SDP 8 produced byte-identical x86-64 and ARM64 binaries (2026-11-11)
 - [ ] Repeat setup on a genuinely clean licensed QNX 8 installation using repository instructions only
-- [x] Scanned 23 reachable Git commits for common token/private-key patterns and suspicious tracked filenames (no matches; not a comprehensive secret scan)
-- [ ] Complete deeper secret scanning with dedicated tooling and manual review
+- [x] Reviewed all 24 reachable Git commits, 73 historical paths and 104 unique blobs with additional common credential/token/key/private-host patterns: no matches (2026-11-11)
+- [ ] Independent secret scanner and manual review for unusual secrets and personal data before submission
 
 ## Submission evidence
 
