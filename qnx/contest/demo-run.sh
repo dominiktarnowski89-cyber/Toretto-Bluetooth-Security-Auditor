@@ -25,7 +25,7 @@ done
 if [[ "$ready" != 1 ]]; then echo "QNX native analyzer did not start" >&2; exit 1; fi
 python3 "$REPO/qnx/contest/replay.py" --socket "$SOCKET"
 for _ in $(seq 1 20); do
-  if [[ $(grep -ac engine:toretto-qnx-live "$LOG" || true) -ge 5 ]]; then break; fi
+  if [[ $(grep -ac '"engine":"toretto-qnx-live"' "$LOG" || true) -ge 5 ]]; then break; fi
   sleep 1
 done
 python3 "$REPO/qnx/contest/verify_demo.py" "$LOG"
