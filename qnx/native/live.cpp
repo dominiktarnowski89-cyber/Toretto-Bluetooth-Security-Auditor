@@ -30,23 +30,27 @@ int main(int argc,char** argv) {
     constexpr size_t max_line_bytes=4*1024*1024;
     // Bound memory even when the input contains no newline. Discard the
     // remainder of an oversized record before processing the next one.
+    unsigned long long input_bytes=0, rejected_oversized=0, rejected_invalid=0;
     while(true) {
         line.clear();
         bool oversized=false;
         bool saw_any=false;
+        unsigned long long record_bytes=0;
         for(;;) {
             const int ch=std::cin.get();
             if(ch==std::char_traits<char>::eof())break;
             saw_any=true;
+            ++input_bytes;
+            ++record_bytes;
             if(ch==10)break;
             if(line.size()<max_line_bytes)line.push_back(static_cast<char>(ch));
             else oversized=true;
         }
         if(!saw_any && line.empty())break;
-        if(oversized){std::cerr<<"oversized line\\n";continue;}
+        if(oversized){++rejected_oversized;std::cerr<<"oversized line bytes="<<input_bytes<<" record_bytes="<<record_bytes<<" rejected_oversized="<<rejected_oversized<<std::endl;continue;}
         json_decoder_t* d=json_decoder_create();if(!d)return 2;
         bool ok=json_decoder_parse_json_str(d,line.c_str())==JSON_DECODER_OK && json_decoder_push_object(d,nullptr,false)==JSON_DECODER_OK;
-        if(!ok){std::cerr<<"invalid event\\n";json_decoder_destroy(d);continue;}
+        if(!ok){++rejected_invalid;std::cerr<<"invalid event bytes="<<input_bytes<<" record_bytes="<<record_bytes<<" rejected_invalid="<<rejected_invalid<<std::endl;json_decoder_destroy(d);continue;}
         if(getstr(d,"event")!="ble_window"){json_decoder_destroy(d);continue;}
         if(json_decoder_push_array(d,"identity_observations",false)!=JSON_DECODER_OK){json_decoder_destroy(d);continue;}
         const int count=json_decoder_length(d);
