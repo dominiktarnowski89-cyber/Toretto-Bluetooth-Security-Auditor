@@ -59,7 +59,7 @@ int main(int argc,char** argv) {
         for(const auto& [fp,g]:groups) {
             if(g.addresses.size()>1)++shared;
             unsigned handoffs=0;std::string last;bool have=false;bool multi=false;
-            for(const auto& [scan,addrs]:g.scans){(void)scan;if(addrs.size()>1){multi=true;continue;}const auto& a=*addrs.begin();if(have&&last!=a)++handoffs;last=a;have=true;}
+            for(const auto& [scan,addrs]:g.scans){(void)scan;if(addrs.empty())continue;if(addrs.size()>1){multi=true;continue;}const auto& a=*addrs.begin();if(have&&last!=a)++handoffs;last=a;have=true;}
             if(handoffs>=3)++handed;
             if(multi)++multiple;
         }
