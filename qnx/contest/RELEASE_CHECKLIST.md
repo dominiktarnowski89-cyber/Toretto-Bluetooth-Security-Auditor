@@ -10,7 +10,7 @@
 - [x] Rebuilt latest native source with licensed QNX SDP 8 (x86-64 and ARM64), regenerated IFS and reran QNX demo: PASS (2026-11-11)
 - [x] Tested malformed JSON and 70 unique addresses / scan IDs in actual QNX guest: 71 accepted windows including empty event, 70 observations; no crash (2026-11-11)
 - [x] Hardened native line reader to cap buffered records at 4 MiB, discard oversized input until newline, and continue; QNX x86-64/ARM64 builds passed, rebuilt guest image passed 5-event demo on Netcup (2026-11-11)
-- [ ] Complete end-to-end oversized-input stress test with throughput-aware serial timeout; prior 4 MiB transfer did not finish within test window (38/71 windows), so no final PASS
+- [ ] Complete end-to-end oversized-input stress test with verified byte delivery and flow control. On 2026-11-11, a 4 MiB+18-byte record was written to the host QEMU serial socket in 29.34s, but guest rejection/recovery was not observed; test stopped without PASS. A diagnostic 1 KiB-threshold guest with a 2 KiB input emitted `invalid event` rather than `oversized line` while accepting the following valid event, indicating transport truncation/byte loss is plausible. Host socket send completion is NOT proof of guest byte delivery. Next: instrument guest byte counts or use reliable file/pipe injection before claiming oversized-input PASS.
 - [x] Isolated source/output build with existing licensed QNX SDP 8 produced byte-identical x86-64 and ARM64 binaries (2026-11-11)
 - [ ] Repeat setup on a genuinely clean licensed QNX 8 installation using repository instructions only
 - [x] Reviewed all 24 reachable Git commits, 73 historical paths and 104 unique blobs with additional common credential/token/key/private-host patterns: no matches (2026-11-11)
