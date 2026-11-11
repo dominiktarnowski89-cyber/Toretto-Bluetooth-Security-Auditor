@@ -1,0 +1,5 @@
+{"event":"ble_window","identity_observations":[{"fingerprint":"demo-shared-payload","address":"C6:DD:1D:2A:C3:E7","scan_id":1}]}
+{"event":"ble_window","identity_observations":[{"fingerprint":"demo-shared-payload","address":"D4:CC:53:81:5B:15","scan_id":2}]}
+{"event":"ble_window","identity_observations":[{"fingerprint":"demo-shared-payload","address":"C6:DD:1D:2A:C3:E7","scan_id":3}]}
+{"event":"ble_window","identity_observations":[{"fingerprint":"demo-shared-payload","address":"D4:CC:53:81:5B:15","scan_id":4}]}
+{"event":"ble_window","identity_observations":[{"fingerprint":"demo-shared-payload","address":"C6:DD:1D:2A:C3:E7","scan_id":5}]}
