@@ -36,8 +36,8 @@ The scanner does not pair with, connect to or attack devices. A shared BLE adver
 - SDK, official QNX image and licensed dependencies are not included.
 
 ## Submission assets to finish
-- [ ] Select and add an OSI-approved license with repository owner's consent.
-- [ ] Confirm repository visibility is public and submission branch is accessible.
+- [x] MIT license included in public repository.
+- [x] Public repository and hackathon/qnx-8 branch were reachable via GitHub push; final anonymous access check pending.
 - [ ] Confirm contest category, eligibility, deadlines, and exact required fields against current official rules.
 - [ ] Record and publish an English-language demo video meeting contest duration and accessibility requirements.
 - [ ] Capture a screenshot of the native QNX guest's successful result.
