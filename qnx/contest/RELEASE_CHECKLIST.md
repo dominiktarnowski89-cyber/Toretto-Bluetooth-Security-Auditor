@@ -7,8 +7,9 @@
 - [x] Demo verifies five actual guest results and expected correlation metrics
 - [x] Linux-to-QNX real BLE observations demonstrated in a previous integration run
 - [x] Source repository has an MIT license
-- [ ] Rebuild the latest native source using the licensed QNX SDP 8, regenerate the IFS and rerun demo
-- [ ] Run malformed/oversized input and retention-boundary tests against the actual QNX binary
+- [x] Rebuilt latest native source with licensed QNX SDP 8 (x86-64 and ARM64), regenerated IFS and reran QNX demo: PASS (2026-11-11)
+- [x] Tested malformed JSON and 70 unique addresses / scan IDs in actual QNX guest: 71 accepted windows including empty event, 70 observations; no crash (2026-11-11)
+- [ ] Test oversized input and additional malformed JSON structures in actual QNX guest
 - [ ] Repeat setup on a clean licensed QNX 8 installation using repository instructions only
 - [ ] Review the public Git history and repository for credentials and private data
 

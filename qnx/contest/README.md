@@ -37,3 +37,7 @@ QNX_IMAGE=/absolute/path/ifs-serial-stream.bin QNX_DISK=/absolute/path/disk-qemu
 ```
 
 The script boots QNX, replays five synthetic BLE events, verifies the native guest log (five events, address sharing, repeated handoff) and shuts down QEMU. It does not need Lenovo, Netcup, or an Internet connection. This intentionally does **not** package or redistribute proprietary QNX binaries. The official-image customization still needs to be documented as a portable build recipe.
+
+## Boundary test (QNX guest)
+
+`boundary-test.py` boots the prepared local QNX image, sends malformed JSON, a non-BLE event, an empty BLE event and 70 BLE events with distinct addresses and scan IDs. It validates the native guest output and terminates QEMU. This tests the 32-address / 64-scan retention caps. Run on a machine with the prepared licensed QNX 8 image at the paths in the script. On 2026-11-11, result: `QNX_BOUNDARY_PASS`, 71 processed BLE windows and 70 observations. An oversized-input test and clean-room build remain outstanding.
