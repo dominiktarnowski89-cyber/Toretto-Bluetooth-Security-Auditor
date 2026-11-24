@@ -1,3 +1,7 @@
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <cstring>
 #include <sys/json.h>
 #include <algorithm>
 #include <iostream>
@@ -19,6 +23,18 @@ static int getint(json_decoder_t* d,const char* key) {
     int n=0;json_decoder_get_int(d,key,&n,true);return n;
 }
 int main(int argc,char** argv) {
+    if(argc==2 && std::string(argv[1])=="--tcp") {
+        int listener=socket(AF_INET,SOCK_STREAM,0);
+        if(listener<0)return 3;
+        sockaddr_in addr{}; addr.sin_family=AF_INET; addr.sin_port=htons(8765); addr.sin_addr.s_addr=htonl(INADDR_ANY);
+        if(bind(listener,reinterpret_cast<sockaddr*>(&addr),sizeof(addr))<0 || listen(listener,1)<0)return 3;
+        std::cerr<<"TORETTO_TCP_READY"<<std::endl;
+        int client=accept(listener,nullptr,nullptr); close(listener);
+        if(client<0)return 3;
+        if(dup2(client,STDIN_FILENO)<0 || dup2(client,STDOUT_FILENO)<0)return 3;
+        if(client>STDOUT_FILENO)close(client);
+        argc=1;
+    }
     if(argc>2){std::cerr<<"Usage: toretto-qnx-live [max-groups]\\n";return 2;}
     unsigned max_groups=2048;
     constexpr size_t max_scans_per_group=64;
